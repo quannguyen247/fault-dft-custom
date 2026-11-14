@@ -1,0 +1,10 @@
+#!/usr/bin/env tclsh
+set script [file normalize [info script]]
+while {[file type $script] eq "link"} {
+    set target [file readlink $script]
+    if {[file pathtype $target] eq "relative"} {set target [file join [file dirname $script] $target]}
+    set script [file normalize $target]
+}
+set root [file dirname [file dirname $script]]
+source [file join $root src faultplus.tcl]
+::fp::main {*}$argv

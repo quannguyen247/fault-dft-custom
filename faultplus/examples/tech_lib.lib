@@ -1,0 +1,60 @@
+library(tech_lib) {
+  cell(INV) {
+    area: 0.5;
+    pin(A) { direction: input; }
+    pin(Y) { direction: output; function: "A'"; }
+  }
+  cell(BUF) {
+    area: 0.5;
+    pin(A) { direction: input; }
+    pin(Y) { direction: output; function: "A"; }
+  }
+  cell(NAND2) {
+    area: 1.0;
+    pin(A) { direction: input; }
+    pin(B) { direction: input; }
+    pin(Y) { direction: output; function: "(A*B)'"; }
+  }
+  cell(NOR2) {
+    area: 1.0;
+    pin(A) { direction: input; }
+    pin(B) { direction: input; }
+    pin(Y) { direction: output; function: "(A+B)'"; }
+  }
+  cell(AND2) {
+    area: 1.2;
+    pin(A) { direction: input; }
+    pin(B) { direction: input; }
+    pin(Y) { direction: output; function: "A*B"; }
+  }
+  cell(OR2) {
+    area: 1.2;
+    pin(A) { direction: input; }
+    pin(B) { direction: input; }
+    pin(Y) { direction: output; function: "A+B"; }
+  }
+  cell(XOR2) {
+    area: 1.8;
+    pin(A) { direction: input; }
+    pin(B) { direction: input; }
+    pin(Y) { direction: output; function: "A^B"; }
+  }
+  cell(DFFARX1) {
+    area: 3.8;
+    ff(IQ, IQN) { clocked_on: "CLK"; next_state: "D"; clear: "RST"; }
+    pin(CLK) { direction: input; }
+    pin(RST) { direction: input; }
+    pin(D)   { direction: input; }
+    pin(Q)   { direction: output; function: "IQ"; }
+  }
+  cell(SDFFARX1) {
+    area: 5.0;
+    ff(IQ, IQN) { clocked_on: "CLK"; next_state: "(SE*SI)+(SE'*D)"; clear: "RST"; }
+    pin(CLK) { direction: input; }
+    pin(RST) { direction: input; }
+    pin(D)   { direction: input; }
+    pin(SI)  { direction: input; }
+    pin(SE)  { direction: input; }
+    pin(Q)   { direction: output; function: "IQ"; }
+  }
+}

@@ -1,0 +1,3 @@
+# Supported subset of Modus pin assignments for the combinational example.
+assign pin=clk test_function=-ES;
+assign pin=rst test_function=-TI;

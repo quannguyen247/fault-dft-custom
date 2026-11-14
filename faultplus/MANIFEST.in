@@ -1,0 +1,5 @@
+include LICENSE README.md
+recursive-include bin *
+recursive-include src *.py *.tcl *.v
+recursive-include examples *.v *.lib *.tcl *.pinassign LICENSE.*
+recursive-include tests *.py
