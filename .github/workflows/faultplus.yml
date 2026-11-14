@@ -1,0 +1,90 @@
+name: Fault+ Linux
+
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: faultplus-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-22.04
+            arch: amd64
+          - runner: ubuntu-22.04-arm
+            arch: arm64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - name: Build from this fork
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: Containerfile
+          load: true
+          tags: localhost/faultplus:${{ github.sha }}
+          build-args: REVISION=${{ github.sha }}
+          cache-from: type=gha,scope=faultplus-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=faultplus-${{ matrix.arch }}
+      - name: Run shell and backend checks
+        run: docker run --rm --entrypoint python3 localhost/faultplus:${{ github.sha }} -m unittest discover -s /opt/faultplus/tests -v
+      - name: Check one-command installation
+        run: |
+          mkdir -p "$RUNNER_TEMP/bin"
+          printf '#!/bin/sh\nprintf "original Fault\\n"\n' > "$RUNNER_TEMP/bin/fault"
+          chmod +x "$RUNNER_TEMP/bin/fault"
+          ln -s fault "$RUNNER_TEMP/bin/faultplus"
+          sha256sum "$RUNNER_TEMP/bin/fault" > "$RUNNER_TEMP/fault-before.sha256"
+          FAULTPLUS_ENGINE=docker FAULTPLUS_PREFIX="$RUNNER_TEMP/bin" ./install.sh
+          sha256sum -c "$RUNNER_TEMP/fault-before.sha256"
+          "$RUNNER_TEMP/bin/fault"
+          mkdir -p "$RUNNER_TEMP/design with spaces"
+          cd "$RUNNER_TEMP/design with spaces"
+          "$RUNNER_TEMP/bin/faultplus" -f /opt/faultplus/examples/full_flow.tcl
+          test -s .faultplus/seq.json
+          test -s chained.v
+      - name: Package the Linux environment
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        run: |
+          docker save localhost/faultplus:${{ github.sha }} | gzip -1 > faultplus-linux-${{ matrix.arch }}.tar.gz
+          sha256sum faultplus-linux-${{ matrix.arch }}.tar.gz > faultplus-linux-${{ matrix.arch }}.tar.gz.sha256
+      - uses: actions/upload-artifact@v7
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        with:
+          name: linux-${{ matrix.arch }}
+          path: faultplus-linux-*
+          compression-level: 0
+  publish:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: linux
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          merge-multiple: true
+          path: packages
+      - name: Publish install packages
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          REVISION: ${{ github.sha }}
+        run: |
+          tag="linux-$REVISION"
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            gh release create "$tag" --target "$REVISION" --title "Linux ${REVISION:0:7}" \
+              --notes 'Prebuilt Fault+ environments for ./install.sh. Includes the backend built from this fork.' --prerelease
+          fi
+          gh release upload "$tag" packages/* --clobber

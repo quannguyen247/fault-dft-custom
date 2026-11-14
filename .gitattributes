@@ -2,3 +2,6 @@ Tech/* linguist-detectable=false
 *.v linguist-detectable=false
 *.sv linguist-detectable=false
 .github/* linguist-detectable=false
+*.sh text eol=lf
+*.tcl text eol=lf
+*.py text eol=lf

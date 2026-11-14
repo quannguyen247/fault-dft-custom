@@ -1,7 +1,8 @@
-/.build
-/Netlists
-/Dockerfile
-/appimage
-/.git
-/.github
-/.dockerignore
+.git
+.build
+graphify-out
+**/__pycache__
+**/*.egg-info
+build
+dist
+.faultplus
