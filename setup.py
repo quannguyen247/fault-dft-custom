@@ -86,7 +86,8 @@ setup(
     long_description_content_type="text/markdown",
     install_requires=open("requirements.txt").read().strip().splitlines(),
     classifiers=[
-        "License :: OSI Approved :: MIT License",
+        # Modified in this fork: match the repository license.
+        "License :: OSI Approved :: Apache Software License",
         "Programming Language :: Python :: 3",
         "Intended Audience :: Developers",
         "Operating System :: POSIX :: Linux",

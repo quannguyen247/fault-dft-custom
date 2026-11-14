@@ -359,7 +359,7 @@ extension Fault {
                         // MARK: Yosys
 
                         print("Resynthesizing with yosys…")
-                        let result = "echo '\(script)' | '\(yosysExecutable)' > /dev/null".sh()
+                        let result = Synthesis.run(script, silent: true)
 
                         if result != EX_OK {
                             Stderr.print("A yosys error has occurred.")

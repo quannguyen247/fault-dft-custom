@@ -68,7 +68,7 @@ extension Fault {
             let outputDirectory = URL(fileURLWithPath: output).deletingLastPathComponent().path
             try fileManager.createDirectory(atPath: outputDirectory, withIntermediateDirectories: true, attributes: nil)
             
-            let result = "echo '\(script)' | '\(yosysExecutable)'".sh()
+            let result = Synthesis.run(script)
             
             if result != EX_OK {
                 print("A yosys error has occurred.")

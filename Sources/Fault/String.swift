@@ -89,7 +89,9 @@ extension Encodable {
 }
 
 extension String {
-    static var boilerplate: String {
+    // Modified in this fork: initialize the generated header once per process.
+    // ATPG workers used to create DateFormatter instances concurrently here.
+    static let boilerplate: String = {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
         let date = Date()
@@ -102,5 +104,5 @@ extension String {
             Generated on: \(dateString)
         */
         """
-    }
+    }()
 }
